@@ -5,38 +5,21 @@ import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import utils.fp.Result
-import java.math.BigDecimal
 
-data class Calculator(
-    var _expr: String = "0",
-    var answer: String = "0",
-    var message: String? = null,
-) {
-    fun reinitialize(): Calculator = copy(_expr = "0", answer = "0", message = null)
+enum class SciOper {
+    SIN, COS, TAN, SQRT, E, PI, INV, LN, LOG
+}
 
-    fun appendCharacter(ch: Char): Calculator {
-        check (ch in "0123456789.+-*/^%() ")
-        return if (_expr == "0") copy(_expr = "$ch")
-        else if (ch in "0123456789." && _expr.last() in "0123456789.")
-            copy(_expr = "$_expr$ch")
-        else
-            copy(_expr = "$_expr $ch")
-    }
+interface AbstractCalculator {
+    var _expr: String
+    var answer: String
+    var message: String?
 
-    fun evaluate(): Calculator {
-//        println(_expr)
-        return when (val res = CalculatorParser().tryParseToEnd(_expr).toResult()) {
-            Result.Empty -> copy(answer = "0")
-            is Result.Failure -> copy(message = res.exception.message)
-            is Result.Success -> {
-                val it = res.value
-                copy(answer = when {
-                    it.stripTrailingZeros().scale() <= 0 -> it.toBigInteger()
-                    else -> it
-                }.toString())
-            }
-        }
-    }
+    fun reinitialize(): AbstractCalculator
+    fun appendCharacter(ch: Char): AbstractCalculator
+    fun evaluate(): AbstractCalculator
+
+    fun scientificOperation(op: SciOper): AbstractCalculator
 
     val calcTerminated: Boolean
         get() = answer.isNotEmpty()
@@ -57,55 +40,88 @@ data class Calculator(
             }
         }
 
-    private fun <T> ParseResult<T>.toResult() = when (this) {
+    fun <T> ParseResult<T>.toResult() = when (this) {
         is Parsed -> Result(this.value)
         is ErrorResult -> Result.failure(this.toString())
     }
+}
 
-    private companion object Test {
-        fun Calculator.parse(str: String) {
-            str.toCharArray().forEach {
-                this.appendCharacter(it)
+data class SimpleCalculator(
+    override var _expr: String = "0",
+    override var answer: String = "0",
+    override var message: String? = null,
+): AbstractCalculator {
+    override fun reinitialize(): SimpleCalculator = copy(_expr = "0", answer = "0", message = null)
+
+    override fun appendCharacter(ch: Char): SimpleCalculator {
+        check (ch in "0123456789.+-*/^%() ")
+        return if (_expr == "0") copy(_expr = "$ch")
+        else if (ch in "0123456789." && _expr.last() in "0123456789.")
+            copy(_expr = "$_expr$ch")
+        else
+            copy(_expr = "$_expr $ch")
+    }
+
+    override fun evaluate(): SimpleCalculator {
+//        println(_expr)
+        return when (val res = SimpleCalculatorParser().tryParseToEnd(_expr).toResult()) {
+            Result.Empty -> copy(answer = "0")
+            is Result.Failure -> copy(message = res.exception.message)
+            is Result.Success -> {
+                val it = res.value
+                copy(answer = when {
+                    it.stripTrailingZeros().scale() <= 0 -> it.toBigInteger()
+                    else -> it.stripTrailingZeros()
+                }.toString())
             }
         }
+    }
 
-        fun Calculator.debug() {
-            println("Expression >")
-            println("\t${this.showExpression}")
-            println("Answer >")
-            println("\t${this.showAnswer}")
-            println("Message >")
-            println("\t${this.showMessage}")
-            println()
+    override fun scientificOperation(op: SciOper): AbstractCalculator = throw Exception("This should not happen")
+}
+
+data class SciCalculator(
+    override var _expr: String = "0",
+    override var answer: String = "0",
+    override var message: String? = null,
+): AbstractCalculator {
+    override fun reinitialize(): SciCalculator = copy(_expr = "0", answer = "0", message = null)
+
+    override fun appendCharacter(ch: Char): SciCalculator {
+        check (ch in "0123456789.+-*/^%() ")
+        return if (_expr == "0") copy(_expr = "$ch")
+        else if (ch in "0123456789." && _expr.last() in "0123456789.")
+            copy(_expr = "$_expr$ch")
+        else
+            copy(_expr = "$_expr $ch")
+    }
+
+    override fun evaluate(): SciCalculator {
+        return when (val res = SimpleCalculatorParser().tryParseToEnd(_expr).toResult()) {
+            Result.Empty -> copy(answer = "0")
+            is Result.Failure -> copy(message = res.exception.message)
+            is Result.Success -> {
+                val it = res.value
+                copy(answer = when {
+                    it.stripTrailingZeros().scale() <= 0 -> it.toBigInteger()
+                    else -> it.stripTrailingZeros()
+                }.toString())
+            }
         }
+    }
 
-//        @JvmStatic // deprecated
-//        fun main(args: Array<String>) {
-//            val calc = Calculator()
-//            calc.parse("1 + 2 * 3 / 4 % 5").also {
-//                calc.debug()
-//                calc.evaluate()
-//                calc.debug()
-//            }
-//            calc.reinitialize()
-//            calc.parse("1 + (2 * 3) / 4 - (5 * 6)").also {
-//                calc.debug()
-//                calc.evaluate()
-//                calc.debug()
-//            }
-//            calc.reinitialize()
-//            calc.parse("(1 + (2 * 3)) / (4 - (5) * 6)").also {
-//                calc.debug()
-//                calc.evaluate()
-//                calc.debug()
-//            }
-//            calc.reinitialize()
-//            calc.parse("12.45 / 27.66 + (38.5 + 42.1 / 16.3) - 24.5 * (13.3 - (22.5 + 14.6))").also {
-//                calc.debug()
-//                calc.evaluate()
-//                calc.debug()
-//            }
-//            calc.reinitialize()
-//        }
+    override fun scientificOperation(op: SciOper): AbstractCalculator {
+        val sp = if (_expr.last() in "0123456789.") " " else ""
+        return when (op) {
+            SciOper.SIN -> copy(_expr = "$_expr${sp}sin(")
+            SciOper.COS -> copy(_expr = "$_expr${sp}cos(")
+            SciOper.TAN -> copy(_expr = "$_expr${sp}tan(")
+            SciOper.SQRT -> copy(_expr = "$_expr${sp}√(")
+            SciOper.E -> copy(_expr = "$_expr${sp}e")
+            SciOper.PI -> copy(_expr = "$_expr${sp}\uD835\uDF45")
+            SciOper.INV -> copy(_expr = "1 /($_expr)")
+            SciOper.LN -> copy(_expr = "$_expr${sp}ln(")
+            SciOper.LOG -> copy(_expr = "$_expr${sp}log(")
+        }
     }
 }

@@ -8,8 +8,9 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import java.math.BigDecimal
+import java.math.RoundingMode
 
-class CalculatorParser: Grammar<BigDecimal>() {
+class SimpleCalculatorParser: Grammar<BigDecimal>() {
     private val num by regexToken("-?\\d+(.\\d+)?")
     private val lparen by literalToken("(")
     private val rparen by literalToken(")")
@@ -31,7 +32,7 @@ class CalculatorParser: Grammar<BigDecimal>() {
     private val mediumPrecedence by leftAssociative(highPrecedence, mul or div or mod use { type }) { lhs, op, rhs ->
         when (op) {
             mul -> lhs * rhs
-            div -> lhs / rhs
+            div -> lhs.divide(rhs, 10, RoundingMode.FLOOR).stripTrailingZeros()
             mod -> lhs % rhs
             else -> throw Exception("This is impossible")
         }
@@ -45,4 +46,8 @@ class CalculatorParser: Grammar<BigDecimal>() {
     }
 
     override val rootParser: Parser<BigDecimal> by lowPrecedence
+}
+
+fun main() {
+    println(SimpleCalculatorParser().tryParseToEnd("1 / (8 + 2) - (7)"))
 }

@@ -19,6 +19,7 @@ repositories {
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation("com.github.h0tk3y.betterParse:better-parse:0.4.2")
+    implementation("ch.obermuhlner:big-math:2.3.0")
 }
 
 tasks.withType<KotlinCompile>() {
@@ -30,7 +31,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Calc-JC"
+            packageName = "Composable Calculator"
             packageVersion = "1.0.0"
         }
     }

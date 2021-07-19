@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import calculator.SciOper
+import calculator.SciOper.*
 
 @Composable
 fun ExpressionAndResultView(
@@ -71,6 +73,72 @@ fun ErrorView(
                 }
             }
         )
+    }
+}
+
+@Composable
+fun SciKeyPadArrangement(
+    sciOpCallback: (SciOper) -> Unit,
+    switchCallback: () -> Unit,
+    isDeg: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth()) {
+        SciPadRow(
+            listOf("sin", "cos", "tan", "√x"),
+            listOf(SIN, COS, TAN, SQRT),
+            List(4) { 0.25f },
+            sciOpCallback
+        )
+        SciPadRow(
+            listOf("e", "\uD835\uDF45", "1/x", "ln"),
+            listOf(E, PI, INV, LN),
+            List(4) { 0.25f },
+            sciOpCallback
+        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = { sciOpCallback(LOG) },
+                modifier = Modifier.weight(0.25f).padding(4.dp)
+            ) {
+                Text("log")
+            }
+            DegRadSwitch(switchCallback, isDeg, Modifier.weight(0.25f).padding(4.dp))
+            Spacer(Modifier.weight(0.5f).padding(4.dp))
+        }
+    }
+}
+
+@Composable
+fun DegRadSwitch(
+    switchCallback: () -> Unit,
+    isDeg: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = switchCallback,
+        modifier = modifier,
+    ) {
+        Text(if (isDeg) "deg" else "rad")
+    }
+}
+
+@Composable
+fun SciPadRow(
+    labels: List<String>, ops: List<SciOper>, weights: List<Float>, sciOpCallback: (SciOper) -> Unit
+) {
+    val zipped = labels.zip(ops).zip(weights).map {
+        pair -> Triple(pair.first.first, pair.first.second, pair.second) }
+    Row(modifier = Modifier.fillMaxWidth()) {
+        zipped.forEach { (label, op, weight) ->
+            Button(
+                onClick = { sciOpCallback(op) },
+                modifier = Modifier.weight(weight).padding(4.dp)
+            ) {
+                Text(label)
+            }
+        }
     }
 }
 
