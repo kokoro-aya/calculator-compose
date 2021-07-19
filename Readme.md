@@ -26,3 +26,11 @@ to resize its height to fit the components.
     - Jetpack Compose
 - Core Logic
     - Better Parse
+    - BigMath
+  
+## Known issues
+
+- If a calculation has encountered exception, the result will recorded as 0 in history
+- Looks like the switch for deg/rad is not working at all
+- Non auto-adaptive layout
+- And lots of other bugs...

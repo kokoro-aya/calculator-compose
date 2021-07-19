@@ -12,11 +12,15 @@ import calculator.AbstractCalculator
 import calculator.SciCalculator
 import calculator.SciOper
 import calculator.SimpleCalculator
+import kotlinx.coroutines.launch
 
 @Composable
 fun Screen() {
 
     val history = remember { mutableStateListOf<Pair<String, String>>() }
+
+    val state = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
 
     val (calc, setCalc) = remember { mutableStateOf<AbstractCalculator>(SimpleCalculator()) }
 
@@ -27,7 +31,10 @@ fun Screen() {
         setCalc(calc.reinitialize())
     }
     val submitCallback = {
-        setCalc(calc.evaluate())
+        calc.evaluate().let {
+            history.add(it.showExpression to it.answer)
+            setCalc(it)
+        }
     }
     val onDismiss = {
         setCalc(calc.reinitialize())
@@ -48,7 +55,11 @@ fun Screen() {
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {},
+                        onClick = { scope.launch {
+                            state.drawerState.also {
+                                if (it.isOpen) it.close() else it.open()
+                            }
+                        } },
                     ) {
                         Icon(Icons.Default.Menu, "Drawer")
                     }
@@ -82,8 +93,9 @@ fun Screen() {
                     if (isSci) {
                         setCalc(SimpleCalculator())
                     } else {
-                        setCalc(SciCalculator())
+                        setCalc(SciCalculator(isDeg))
                     }
+                    // 这里有大坑，要反复试几次（
                 },
             )
         },
@@ -104,6 +116,21 @@ fun Screen() {
                 KeyPadArrangement(
                     numOpCallback, submitCallback, resetCallback
                 )
+            }
+        },
+        scaffoldState = state,
+        drawerContent = {
+            Column(
+                Modifier.fillMaxWidth().padding(start = 24.dp, top = 32.dp)
+            ) {
+                Text("History calculations", style = MaterialTheme.typography.h5)
+                Spacer(Modifier.height(24.dp))
+                history.takeLast(20).forEach {
+                    Text(
+                        text = "${it.first} = ${it.second}",
+                        style = MaterialTheme.typography.body1
+                    )
+                }
             }
         }
     )

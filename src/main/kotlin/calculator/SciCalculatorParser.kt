@@ -41,13 +41,13 @@ class SciCalculatorParser(deg: Boolean): Grammar<BigDecimal>() {
     private val tan by literalToken("tan(")
     private val ln by literalToken("ln(")
     private val log by literalToken("log(")
-    private val ws by regexToken("\\s+", ignore = true)
+    private val ws by regexToken("\\s+", ignore = true) // 有坑，忘记了忽略ws的话会出错，但错误提示很不明显。。。
 
     private val var_num by num use { text.toBigDecimal() }
     private val const_pi by pi use { PI }
     private val const_e by e use { E }
 
-    private val number: Parser<BigDecimal> by num use { text.toBigDecimal() }
+    private val number: Parser<BigDecimal> by var_num or const_pi or const_e
 
     private val term: Parser<BigDecimal> by number or
             (skip(sub) and parser(::term) map { -it}) or
@@ -112,5 +112,5 @@ class SciCalculatorParser(deg: Boolean): Grammar<BigDecimal>() {
 }
 
 fun main() {
-    println(SciCalculatorParser(true).tryParseToEnd("√(64)"))
+    println(SciCalculatorParser(true).tryParseToEnd("√(64 - 25)"))
 }

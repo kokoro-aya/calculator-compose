@@ -11,9 +11,9 @@ enum class SciOper {
 }
 
 interface AbstractCalculator {
-    var _expr: String
-    var answer: String
-    var message: String?
+    val _expr: String
+    val answer: String
+    val message: String?
 
     fun reinitialize(): AbstractCalculator
     fun appendCharacter(ch: Char): AbstractCalculator
@@ -47,9 +47,9 @@ interface AbstractCalculator {
 }
 
 data class SimpleCalculator(
-    override var _expr: String = "0",
-    override var answer: String = "0",
-    override var message: String? = null,
+    override val _expr: String = "0",
+    override val answer: String = "0",
+    override val message: String? = null,
 ): AbstractCalculator {
     override fun reinitialize(): SimpleCalculator = copy(_expr = "0", answer = "0", message = null)
 
@@ -81,9 +81,10 @@ data class SimpleCalculator(
 }
 
 data class SciCalculator(
-    override var _expr: String = "0",
-    override var answer: String = "0",
-    override var message: String? = null,
+    val deg: Boolean,
+    override val _expr: String = "0",
+    override val answer: String = "0",
+    override val message: String? = null,
 ): AbstractCalculator {
     override fun reinitialize(): SciCalculator = copy(_expr = "0", answer = "0", message = null)
 
@@ -97,7 +98,7 @@ data class SciCalculator(
     }
 
     override fun evaluate(): SciCalculator {
-        return when (val res = SimpleCalculatorParser().tryParseToEnd(_expr).toResult()) {
+        return when (val res = SciCalculatorParser(deg).tryParseToEnd(_expr).toResult()) {
             Result.Empty -> copy(answer = "0")
             is Result.Failure -> copy(message = res.exception.message)
             is Result.Success -> {
@@ -111,17 +112,17 @@ data class SciCalculator(
     }
 
     override fun scientificOperation(op: SciOper): AbstractCalculator {
-        val sp = if (_expr.last() in "0123456789.") " " else ""
+        val expr = if (_expr == "0") "" else _expr
         return when (op) {
-            SciOper.SIN -> copy(_expr = "$_expr${sp}sin(")
-            SciOper.COS -> copy(_expr = "$_expr${sp}cos(")
-            SciOper.TAN -> copy(_expr = "$_expr${sp}tan(")
-            SciOper.SQRT -> copy(_expr = "$_expr${sp}√(")
-            SciOper.E -> copy(_expr = "$_expr${sp}e")
-            SciOper.PI -> copy(_expr = "$_expr${sp}\uD835\uDF45")
+            SciOper.SIN -> copy(_expr = "${expr}sin(")
+            SciOper.COS -> copy(_expr = "${expr}cos(")
+            SciOper.TAN -> copy(_expr = "${expr}tan(")
+            SciOper.SQRT -> copy(_expr = "${expr}√(")
+            SciOper.E -> copy(_expr = "${expr}e")
+            SciOper.PI -> copy(_expr = "${expr}\uD835\uDF45")
             SciOper.INV -> copy(_expr = "1 /($_expr)")
-            SciOper.LN -> copy(_expr = "$_expr${sp}ln(")
-            SciOper.LOG -> copy(_expr = "$_expr${sp}log(")
+            SciOper.LN -> copy(_expr = "${expr}ln(")
+            SciOper.LOG -> copy(_expr = "${expr}log(")
         }
     }
 }
