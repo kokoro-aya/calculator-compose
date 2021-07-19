@@ -3,6 +3,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun ExpressionAndResultView(
@@ -35,6 +36,7 @@ fun ExpressionAndResultView(
                         Text(
                             text = expression,
                             style = MaterialTheme.typography.body1,
+                            lineHeight = 18.sp,
                             modifier = Modifier.padding(start = 64.dp, top = 12.dp, end = 64.dp, bottom = 64.dp)
                         )
                     }
