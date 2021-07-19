@@ -11,29 +11,34 @@ fun ExpressionAndResultView(
     modifier: Modifier = Modifier
 ) {
     Card(
-        elevation = 2.dp,
+        elevation = 4.dp,
         modifier = modifier.fillMaxWidth()
     ) {
-        Column {
-            Surface(
-                color = MaterialTheme.colors.primaryVariant,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = expression,
-                    style = MaterialTheme.typography.body2,
-                    modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 4.dp)
+        Surface(
+            color = MaterialTheme.colors.primaryVariant,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                Spacer(
+                    modifier = Modifier.fillMaxWidth().height(32.dp)
                 )
-            }
-            Surface(
-                color = MaterialTheme.colors.primary,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = result,
-                    style = MaterialTheme.typography.h3,
-                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp, end = 8.dp, top = 4.dp)
-                )
+                Surface(
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        Text(
+                            text = result,
+                            style = MaterialTheme.typography.h3,
+                            modifier = Modifier.padding(start = 64.dp, bottom = 12.dp, end = 64.dp, top = 64.dp)
+                        )
+                        Text(
+                            text = expression,
+                            style = MaterialTheme.typography.body1,
+                            modifier = Modifier.padding(start = 64.dp, top = 12.dp, end = 64.dp, bottom = 64.dp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -76,7 +81,7 @@ fun KeyPadArrangement(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()) {
+            .fillMaxWidth()) {
         KeyPadRow(
             listOf(null, null),
             listOf('(', ')'),

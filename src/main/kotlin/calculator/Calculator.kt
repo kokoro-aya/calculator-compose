@@ -24,7 +24,7 @@ data class Calculator(
     }
 
     fun evaluate(): Calculator {
-        println(_expr)
+//        println(_expr)
         return when (val res = CalculatorParser().tryParseToEnd(_expr).toResult()) {
             Result.Empty -> copy(answer = "0")
             is Result.Failure -> copy(message = res.exception.message)
