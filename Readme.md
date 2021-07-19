@@ -1,7 +1,7 @@
 # A simple calculator
 ![screensnap](./calc.png)
 
-Supports calculations with add/sub/mul/div/exp/rem and parenthesis.
+Supports calculations with add/sub/mul/div/exp/rem and parenthesis and several scientific operations.
 
 The implementation made usage of Jetpack Compose for Desktop as UI library
 and BetterParse as the parsing library.
